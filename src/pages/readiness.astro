@@ -1,0 +1,150 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+---
+
+<Layout>
+  <Navigation />
+  <main class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">Training Readiness</h1>
+    
+    <div class="mb-8">
+      <form id="addMetric" class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-bold mb-4">Add New Metric</h2>
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="metricName">
+            Metric Name
+          </label>
+          <input
+            type="text"
+            id="metricName"
+            name="metricName"
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+        >
+          Add Metric
+        </button>
+      </form>
+    </div>
+
+    <form id="readinessCheck" class="bg-white p-6 rounded-lg shadow-md mb-6">
+      <h2 class="text-xl font-bold mb-6">Daily Readiness Check</h2>
+      
+      <div id="metricsContainer" class="space-y-6">
+        <!-- Metrics will be populated by JavaScript -->
+      </div>
+
+      <button
+        type="submit"
+        class="mt-6 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+      >
+        Check Readiness
+      </button>
+    </form>
+
+    <div id="readinessResult" class="hidden bg-white p-6 rounded-lg shadow-md">
+      <h3 class="text-xl font-bold mb-4">Your Readiness Score</h3>
+      <div class="text-4xl font-bold text-center mb-4">
+        <span id="readinessScore">0</span>/<span id="maxScore">0</span>
+      </div>
+      <p id="readinessMessage" class="text-center text-gray-700"></p>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  const defaultMetrics = ['Sleep Quality', 'Physical Energy', 'Mental Focus'];
+  let metrics = JSON.parse(localStorage.getItem('readinessMetrics') || '[]');
+
+  function displayMetrics() {
+    const container = document.getElementById('metricsContainer');
+    if (container) {
+      container.innerHTML = metrics.map((metric, index) => `
+        <div class="relative">
+          <div class="flex justify-between items-center mb-3">
+            <label class="block text-gray-700 font-bold">${metric}</label>
+            <button
+              type="button"
+              onclick="deleteMetric(${index})"
+              class="text-deleteButton hover:text-gray-700"
+            >
+              Delete
+            </button>
+          </div>
+          <div class="flex space-x-4">
+            ${[1, 2, 3, 4, 5].map(value => `
+              <input type="radio" name="metric_${index}" value="${value}" id="metric_${index}_${value}" class="hidden peer" required>
+              <label for="metric_${index}_${value}" class="cursor-pointer px-4 py-2 rounded border peer-checked:bg-blue-500 peer-checked:text-white">
+                ${value}
+              </label>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+  }
+
+  function deleteMetric(index) {
+    if (confirm('Are you sure you want to delete this metric?')) {
+      metrics.splice(index, 1);
+      localStorage.setItem('readinessMetrics', JSON.stringify(metrics));
+      displayMetrics();
+    }
+  }
+
+  const addMetricForm = document.getElementById('addMetric');
+  addMetricForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const metricName = formData.get('metricName')?.toString();
+    
+    if (metricName && !metrics.includes(metricName)) {
+      metrics.push(metricName);
+      localStorage.setItem('readinessMetrics', JSON.stringify(metrics));
+      displayMetrics();
+      addMetricForm.reset();
+    }
+  });
+
+  const readinessForm = document.getElementById('readinessCheck');
+  const result = document.getElementById('readinessResult');
+  const scoreElement = document.getElementById('readinessScore');
+  const maxScoreElement = document.getElementById('maxScore');
+  const messageElement = document.getElementById('readinessMessage');
+
+  readinessForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    
+    let total = 0;
+    metrics.forEach((_, index) => {
+      total += parseInt(formData.get(`metric_${index}`) as string);
+    });
+    
+    const maxScore = metrics.length * 5;
+    const percentage = (total / maxScore) * 100;
+    
+    let message = '';
+    if (percentage <= 40) {
+      message = 'Consider taking a rest day or doing light recovery work.';
+    } else if (percentage <= 60) {
+      message = 'You can train but should focus on technique rather than intensity.';
+    } else if (percentage <= 80) {
+      message = 'Good to go! You can handle a moderate to high intensity session.';
+    } else {
+      message = 'Excellent! You\'re ready for peak performance training!';
+    }
+
+    if (scoreElement) scoreElement.textContent = total.toString();
+    if (maxScoreElement) maxScoreElement.textContent = maxScore.toString();
+    if (messageElement) messageElement.textContent = message;
+    if (result) result.classList.remove('hidden');
+  });
+
+  displayMetrics();
+</script>

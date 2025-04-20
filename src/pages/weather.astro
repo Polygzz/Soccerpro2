@@ -1,0 +1,144 @@
+---
+---
+
+<script>
+// Weather integration for soccer training app
+
+// Store API key
+const API_KEY = 'af770edc03304b4e8b6213518251604'; // Replace with your actual key
+
+// Get weather data based on geolocation
+async function getWeatherData() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(async position => {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+      
+      try {
+        const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`);
+        const data = await response.json();
+        displayWeather(data);
+      } catch (error) {
+        console.error('Error fetching weather data:', error);
+        document.getElementById('weatherDisplay').innerHTML = '<p>Unable to fetch weather data. Please try again later.</p>';
+      }
+    }, error => {
+      console.error('Error getting location:', error);
+      document.getElementById('weatherDisplay').innerHTML = 
+        '<p>Location access denied. Please enable location services to see weather information.</p>';
+    });
+  } else {
+    document.getElementById('weatherDisplay').innerHTML = 
+      '<p>Geolocation is not supported by this browser.</p>';
+  }
+}
+
+// Display weather information in the UI
+function displayWeather(data) {
+  const temp = Math.round(data.main.temp);
+  const description = data.weather[0].description;
+  const iconCode = data.weather[0].icon;
+  const iconUrl = `http://openweathermap.org/img/wn/${iconCode}@2x.png`;
+  const windSpeed = data.wind.speed;
+  const humidity = data.main.humidity;
+  
+  document.getElementById('weatherDisplay').innerHTML = `
+    <img src="${iconUrl}" alt="${description}" class="w-16 h-16">
+    <div class="ml-4">
+      <div class="text-2xl font-bold">${temp}°C</div>
+      <div class="capitalize">${description}</div>
+      <div class="text-sm text-gray-600">Wind: ${windSpeed} m/s | Humidity: ${humidity}%</div>
+    </div>
+  `;
+  
+  // Update workout recommendations based on weather
+  updateWorkoutRecommendations(data);
+}
+
+// Generate workout recommendations based on weather conditions
+function updateWorkoutRecommendations(weatherData) {
+  const temp = weatherData.main.temp;
+  const weatherCondition = weatherData.weather[0].main;
+  const windSpeed = weatherData.wind.speed;
+  let recommendation = '';
+  
+  // Temperature-based recommendations
+  if (temp > 30) {
+    recommendation = 'Extreme heat alert! Consider indoor training or schedule your workout early morning or late evening. Stay hydrated and take frequent breaks.';
+  } else if (temp > 25) {
+    recommendation = 'Hot conditions. Reduce intensity, stay hydrated, and consider shorter sessions. Technical drills might be better than high-intensity runs.';
+  } else if (temp < 5) {
+    recommendation = 'Cold conditions. Extend your warm-up period and wear layers. Focus on maintaining movement to stay warm.';
+  } else if (temp < 0) {
+    recommendation = 'Freezing conditions! Consider indoor training. If outdoors, proper warm-up is essential and watch for icy patches.';
+  } else {
+    recommendation = 'Ideal temperature for training. All workout types recommended.';
+  }
+  
+  // Weather condition recommendations
+  if (weatherCondition === 'Rain') {
+    recommendation += ' Rainy conditions may affect ball control. Consider ball mastery drills under cover or focused technical work.';
+  } else if (weatherCondition === 'Snow') {
+    recommendation += ' Snowy conditions - indoor training recommended. If outdoors, focus on balance and core stability work.';
+  } else if (weatherCondition === 'Thunderstorm') {
+    recommendation += ' WARNING: Thunderstorms detected. Move indoors immediately for safety.';
+  } else if (weatherCondition === 'Clear' && temp > 20) {
+    recommendation += ' Clear skies - perfect for all training activities. Consider sunscreen if training for extended periods.';
+  }
+  
+  // Wind recommendations
+  if (windSpeed > 10) {
+    recommendation += ' High winds may affect ball flight. Good opportunity to practice adapting to challenging conditions.';
+  }
+  
+  document.getElementById('weatherRecommendation').innerHTML = `
+    <h3 class="font-bold mb-2">Today's Training Recommendation:</h3>
+    <p>${recommendation}</p>
+  `;
+}
+
+// Update weather by city/location name
+async function updateWeatherByLocation(location) {
+  if (!location) return;
+  
+  try {
+    const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${location}&units=metric&appid=${API_KEY}`);
+    if (!response.ok) {
+      throw new Error('Location not found');
+    }
+    const data = await response.json();
+    displayWeather(data);
+  } catch (error) {
+    console.error('Error:', error);
+    document.getElementById('weatherDisplay').innerHTML = '<p>Location not found. Please try again.</p>';
+  }
+}
+
+// Initialize event listeners when DOM is loaded
+function initWeatherFeatures() {
+  // Get initial weather data
+  getWeatherData();
+  
+  // Set up location button listener
+  const updateLocationBtn = document.getElementById('updateLocationBtn');
+  const locationInput = document.getElementById('location');
+  
+  updateLocationBtn?.addEventListener('click', () => {
+    const location = (locationInput as HTMLInputElement)?.value;
+    if (location) {
+      updateWeatherByLocation(location);
+    }
+  });
+  
+  // Refresh weather data every 30 minutes
+  setInterval(getWeatherData, 30 * 60 * 1000);
+}
+
+// Initialize weather when page loads
+document.addEventListener('DOMContentLoaded', initWeatherFeatures);
+
+// Export functions for use in other components
+window.getWeatherData = getWeatherData;
+window.updateWeatherByLocation = updateWeatherByLocation;
+window.initWeatherFeatures = initWeatherFeatures;
+</script>
