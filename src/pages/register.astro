@@ -3,7 +3,8 @@ import Layout from '../layouts/Layout.astro';
 import { supabaseClient } from '../utils/supabaseClient';
 import { getCookie, setCookie, deleteCookie } from 'astro:cookies';
 import { SITE_URL } from '../consts';
-import { redirect } from 'astro/redirect';
+import { redirect } from 'astro/dist/redirect/index.js';
+
 
 const { authProviders } = Astro.props;
 
