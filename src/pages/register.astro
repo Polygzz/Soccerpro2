@@ -1,10 +1,8 @@
----
 import Layout from '../layouts/Layout.astro';
 import { supabaseClient } from '../utils/supabaseClient';
 import { getCookie, setCookie, deleteCookie } from 'astro:cookies';
 import { SITE_URL } from '../consts';
-import { redirect } from 'astro/dist/redirect/index.js';
-
+// import { redirect } from 'astro/dist/redirect/index.js';
 
 const { authProviders } = Astro.props;
 
@@ -29,7 +27,8 @@ if (Astro.request.method === 'POST') {
     return new Response(error.message, { status: 400 });
   }
 
-  throw redirect('/login', 302);
+  Astro.response.headers.set('Location', '/login');
+  return new Response(null, { status: 302 });
 }
 ---
 
@@ -61,3 +60,7 @@ if (Astro.request.method === 'POST') {
     </form>
   </main>
 </Layout>
+</boltAction>
+</boltArtifact>
+
+
