@@ -1,48 +1,11 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { supabaseClient } from '../utils/supabaseClient';
+// import { supabaseClient } from '../utils/supabaseClient';
 import { getCookie, setCookie, deleteCookie } from 'astro:cookies';
 import { SITE_URL } from '../consts';
 // import { redirect } from 'astro/dist/redirect/index.js';
 
 const { authProviders } = Astro.props;
-
-if (Astro.request.method === 'POST') {
-  const formData = await Astro.request.formData();
-  const email = formData.get('email');
-  const password = formData.get('password');
-
-  if (!email || !password) {
-    return new Response('Missing email or password', { status: 400 });
-  }
-
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) {
-    return new Response(error.message, { status: 400 });
-  }
-
-  const { access_token, refresh_token } = data.session;
-
-  Astro.cookies.set('sb-access-token', access_token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'lax',
-    path: '/',
-  });
-  Astro.cookies.set('sb-refresh-token', refresh_token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'lax',
-    path: '/',
-  });
-
-  Astro.response.headers.set('Location', '/');
-  return new Response(null, { status: 302 });
-}
 ---
 
 <Layout>
@@ -73,3 +36,30 @@ if (Astro.request.method === 'POST') {
     </form>
   </main>
 </Layout>
+
+<script>
+  import { supabaseClient } from '../utils/supabaseClient';
+
+  const form = document.getElementById('loginForm');
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email: email,
+      password: password,
+    });
+
+    if (error) {
+      alert(error.message);
+    } else {
+      const { access_token, refresh_token } = data.session;
+
+      document.cookie = `sb-access-token=${access_token}; path=/; secure; samesite=lax`;
+      document.cookie = `sb-refresh-token=${refresh_token}; path=/; secure; samesite=lax`;
+
+      window.location.href = '/'; // Client-side redirect
+    }
+  });
+</script>
