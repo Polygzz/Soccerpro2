@@ -1,14 +1,26 @@
-
 ---
 import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import AddSession from '../components/AddSession.astro';
 import TrainingSession from '../components/TrainingSession.astro';
+import { isAuthenticated } from '../utils/auth';
+
+// Check authentication status
+const authenticated = await isAuthenticated(Astro.cookies);
+if (!authenticated) {
+  return Astro.redirect('/login');
+}
 ---
 
 <Layout>
   <Navigation />
   <main class="container mx-auto px-4 py-8">
+    {Astro.url.searchParams.get('login') === 'success' && (
+      <div class="max-w-3xl mx-auto mb-6 p-4 bg-green-100 text-green-700 rounded-lg">
+        Login successful! Welcome to Soccer Training Tracker.
+      </div>
+    )}
+    
     <h1 class="text-3xl font-bold mb-8 text-center">Soccer Training Tracker</h1>
     
     <!-- Weather Container -->
@@ -223,4 +235,3 @@ import TrainingSession from '../components/TrainingSession.astro';
   // Refresh weather data every 30 minutes
   setInterval(getWeatherData, 30 * 60 * 1000);
 </script>
-</boltArtifact>

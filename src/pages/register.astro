@@ -1,17 +1,64 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { supabaseClient } from '../utils/supabaseClient';
-import { getCookie, setCookie, deleteCookie } from 'astro:cookies';
-import { SITE_URL } from '../consts';
-// import { redirect } from 'astro/dist/redirect/index.js';
+import { isAuthenticated } from '../utils/auth';
 
-const { authProviders } = Astro.props;
+// Get URL parameters for status messages
+const params = Astro.url.searchParams;
+const registrationFailed = params.get('error') === 'true';
+const errorMessage = params.get('message') || 'Registration error';
+
+// Check if already authenticated
+const authenticated = await isAuthenticated(Astro.cookies);
+if (authenticated) {
+  return Astro.redirect('/');
+}
+
+// Handle form submission server-side
+if (Astro.request.method === 'POST') {
+  try {
+    const formData = await Astro.request.formData();
+    const email = formData.get('email');
+    const password = formData.get('password');
+    
+    if (typeof email === 'string' && typeof password === 'string') {
+      const { data, error } = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${Astro.url.origin}/login`,
+        }
+      });
+      
+      if (error) {
+        console.error('Registration error:', error);
+        // Check if it's an "Email already registered" error
+        if (error.message.includes('already registered')) {
+          return Astro.redirect(`/register?error=true&message=${encodeURIComponent('An account with this email already exists')}`);
+        }
+        return Astro.redirect(`/register?error=true&message=${encodeURIComponent(error.message)}`);
+      } else {
+        // Registration successful, redirect to login
+        return Astro.redirect('/login?registered=true');
+      }
+    }
+  } catch (error) {
+    console.error('Registration form processing error:', error);
+    return Astro.redirect('/register?error=true&message=An+unexpected+error+occurred');
+  }
+}
 ---
 
 <Layout>
   <main class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold mb-8 text-center">Register</h1>
-
+    
+    {registrationFailed && (
+      <div class="max-w-md mx-auto mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
+        {errorMessage}
+      </div>
+    )}
+    
     <form id="registerForm" method="post" action="/register" class="max-w-md mx-auto bg-boxColor shadow-md rounded px-8 pt-6 pb-8 mb-4">
       <div class="mb-4">
         <label class="block text-textPrimary text-sm font-bold mb-2" for="email">
@@ -23,7 +70,7 @@ const { authProviders } = Astro.props;
         <label class="block text-textPrimary text-sm font-bold mb-2" for="password">
           Password
         </label>
-        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" id="password" name="password" type="password" placeholder="Password" />
+        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" id="password" name="password" type="password" placeholder="Password" required/>
       </div>
       <div class="flex items-center justify-between">
         <button class="bg-primary hover:bg-secondary text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
@@ -39,26 +86,58 @@ const { authProviders } = Astro.props;
 
 <script>
   import { supabaseClient } from '../utils/supabaseClient';
-
   const form = document.getElementById('registerForm');
+  const statusMessage = document.createElement('div');
+  statusMessage.className = "mb-4 p-4 rounded-lg hidden";
+  
+  // Insert status message div before the form
+  form?.parentNode?.insertBefore(statusMessage, form);
+  
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-
-    const { data, error } = await supabaseClient.auth.signUp({
-      email: email,
-      password: password,
-      options: {
-        emailRedirectTo: window.location.origin,
-      },
-    });
-
-    if (error) {
-      alert(error.message);
-    } else {
-      alert('Registration successful! Please check your email to verify your account.');
-      window.location.href = '/login'; // Client-side redirect
+    
+    // Show loading message
+    statusMessage.className = "mb-4 p-4 bg-blue-100 text-blue-700 rounded-lg";
+    statusMessage.innerText = "Creating account...";
+    statusMessage.classList.remove('hidden');
+    
+    try {
+      const { data, error } = await supabaseClient.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          emailRedirectTo: window.location.origin + '/login',
+        },
+      });
+      
+      if (error) {
+        // Check if it's an "Email already registered" error
+        if (error.message.includes('already registered')) {
+          statusMessage.className = "mb-4 p-4 bg-yellow-100 text-yellow-700 rounded-lg";
+          statusMessage.innerText = "An account with this email already exists";
+        } else {
+          // Show general error message
+          statusMessage.className = "mb-4 p-4 bg-red-100 text-red-700 rounded-lg";
+          statusMessage.innerText = error.message;
+        }
+      } else {
+        // Show success message
+        statusMessage.className = "mb-4 p-4 bg-green-100 text-green-700 rounded-lg";
+        statusMessage.innerText = "Registration successful! Please check your email to verify your account.";
+        
+        // Wait a moment before redirecting to show the success message
+        setTimeout(() => {
+          window.location.href = '/login?registered=true'; // Use client-side redirect like in your original code
+        }, 1500);
+        return;
+      }
+    } catch (error) {
+      // Show generic error message
+      statusMessage.className = "mb-4 p-4 bg-red-100 text-red-700 rounded-lg";
+      statusMessage.innerText = "An error occurred during registration";
+      console.error(error);
     }
   });
 </script>

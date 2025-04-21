@@ -1,29 +1,77 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { supabaseClient } from '../utils/supabaseClient';
-import { getCookie, setCookie, deleteCookie } from 'astro:cookies';
-import { SITE_URL } from '../consts';
-// import { redirect } from 'astro/dist/redirect/index.js';
+import { saveAuthCookies, isAuthenticated } from '../utils/auth';
 
-const { authProviders } = Astro.props;
+// Get URL parameters for status messages
+const params = Astro.url.searchParams;
+const registered = params.get('registered') === 'true';
+const loginFailed = params.get('error') === 'true';
+const errorMessage = params.get('message') || 'Invalid email or password';
+
+// Check if already authenticated
+const authenticated = await isAuthenticated(Astro.cookies);
+if (authenticated) {
+  return Astro.redirect('/');
+}
+
+// Handle form submission server-side
+if (Astro.request.method === 'POST') {
+  try {
+    const formData = await Astro.request.formData();
+    const email = formData.get('email');
+    const password = formData.get('password');
+    
+    if (typeof email === 'string' && typeof password === 'string') {
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      if (error) {
+        console.error('Login error:', error);
+        return Astro.redirect(`/login?error=true&message=${encodeURIComponent(error.message)}`);
+      } else if (data.session) {
+        // Save session in cookies
+        saveAuthCookies(Astro.cookies, data.session);
+        return Astro.redirect('/?login=success');
+      }
+    }
+  } catch (error) {
+    console.error('Login form processing error:', error);
+    return Astro.redirect('/login?error=true&message=An+unexpected+error+occurred');
+  }
+}
 ---
 
 <Layout>
   <main class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold mb-8 text-center">Login</h1>
-
+    
+    {registered && (
+      <div class="max-w-md mx-auto mb-4 p-4 bg-green-100 text-green-700 rounded-lg">
+        Registration successful! Please check your email to verify your account before logging in.
+      </div>
+    )}
+    
+    {loginFailed && (
+      <div class="max-w-md mx-auto mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
+        {errorMessage}
+      </div>
+    )}
+    
     <form id="loginForm" method="post" action="/login" class="max-w-md mx-auto bg-boxColor shadow-md rounded px-8 pt-6 pb-8 mb-4">
       <div class="mb-4">
         <label class="block text-textPrimary text-sm font-bold mb-2" for="email">
           Email
         </label>
-        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="email" name="email" type="email" placeholder="Email" required/>
+        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="email" name="email" type="email" placeholder="Email" required />
       </div>
       <div class="mb-6">
         <label class="block text-textPrimary text-sm font-bold mb-2" for="password">
           Password
         </label>
-        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" id="password" name="password" type="password" placeholder="Password" required/>
+        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" id="password" name="password" type="password" placeholder="Password" required />
       </div>
       <div class="flex items-center justify-between">
         <button class="bg-primary hover:bg-secondary text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
@@ -39,27 +87,49 @@ const { authProviders } = Astro.props;
 
 <script>
   import { supabaseClient } from '../utils/supabaseClient';
-
   const form = document.getElementById('loginForm');
+  const statusMessage = document.createElement('div');
+  statusMessage.className = "mb-4 p-4 rounded-lg hidden";
+  
+  // Insert status message div before the form
+  form?.parentNode?.insertBefore(statusMessage, form);
+  
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-
-    const { data, error } = await supabaseClient.auth.signInWithPassword({
-      email: email,
-      password: password,
-    });
-
-    if (error) {
-      alert(error.message);
-    } else {
-      const { access_token, refresh_token } = data.session;
-
-      document.cookie = `sb-access-token=${access_token}; path=/; secure; samesite=lax`;
-      document.cookie = `sb-refresh-token=${refresh_token}; path=/; secure; samesite=lax`;
-
-      window.location.href = '/'; // Client-side redirect
+    
+    // Show loading message
+    statusMessage.className = "mb-4 p-4 bg-blue-100 text-blue-700 rounded-lg";
+    statusMessage.innerText = "Logging in...";
+    statusMessage.classList.remove('hidden');
+    
+    try {
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+      
+      if (error) {
+        // Show error message
+        statusMessage.className = "mb-4 p-4 bg-red-100 text-red-700 rounded-lg";
+        statusMessage.innerText = error.message;
+      } else {
+        // Show success message
+        statusMessage.className = "mb-4 p-4 bg-green-100 text-green-700 rounded-lg";
+        statusMessage.innerText = "Login successful! Redirecting...";
+        
+        // Wait a moment before submitting to show the success message
+        setTimeout(() => {
+          window.location.href = '/'; // Keep your original client-side redirect
+        }, 1000);
+        return;
+      }
+    } catch (error) {
+      // Show generic error message
+      statusMessage.className = "mb-4 p-4 bg-red-100 text-red-700 rounded-lg";
+      statusMessage.innerText = "An error occurred during login";
+      console.error(error);
     }
   });
 </script>
