@@ -1,16 +1,17 @@
 ---
-// src/pages/login.astro
-import { supabaseClient } from '../../utils/supabaseClient';
-import { saveAuthCookies } from '../../utils/auth';
-import { redirect } from 'astro:middleware';
-import { cookies } from 'astro:server';
+import Layout from '../layouts/Layout.astro';
+import { supabaseClient } from '../utils/supabaseClient';
+import { saveAuthCookies } from '../utils/auth';
+import { useState } from 'react';
 
 let errorMessage = '';
+let successMessage = '';
 
-async function handleLogin(request) {
-  const formData = await request.formData();
-  const email = formData.get('email');
-  const password = formData.get('password');
+const handleSubmit = async (event) => {
+  event.preventDefault();
+
+  const email = event.target.email.value;
+  const password = event.target.password.value;
 
   const { data, error } = await supabaseClient.auth.signInWithPassword({
     email,
@@ -18,37 +19,76 @@ async function handleLogin(request) {
   });
 
   if (error) {
-    console.error("Login error:", error.message);
     errorMessage = error.message;
-    return;
-  }
-
-  if (data.session) {
-    saveAuthCookies(cookies, data.session);
-    // ✅ Redirect to dashboard after login
-    throw redirect('/dashboard');
+    successMessage = ''; // Clear success message on error
   } else {
-    console.error("No session returned during login.");
-    errorMessage = "No session returned.";
-  }
-}
+    successMessage = 'Login successful! Redirecting to dashboard...';
+    errorMessage = ''; // Clear error message on success
 
-if (Astro.request.method === 'POST') {
-  await handleLogin(Astro.request);
-}
+    // Save the session to cookies for persistence
+    saveAuthCookies(Astro.cookies, data.session);
+
+    // Redirect to dashboard after login
+    setTimeout(() => {
+      window.location.href = '/dashboard';  // Redirect to your dashboard
+    }, 2000); // Wait for a short time before redirecting
+  }
+};
 ---
 
-<html>
-  <head>
-    <title>Login</title>
-  </head>
-  <body>
-    <h1>Login</h1>
-    {errorMessage && <p style="color:red">{errorMessage}</p>}
-    <form method="POST">
-      <input type="email" name="email" placeholder="Email" required />
-      <input type="password" name="password" placeholder="Password" required />
-      <button type="submit">Login</button>
-    </form>
-  </body>
-</html>
+<Layout>
+  <div class="flex justify-center items-center min-h-screen bg-gray-100">
+    <div class="w-full max-w-sm p-6 bg-white rounded-lg shadow-lg">
+      <h1 class="text-2xl font-bold text-center mb-6">Login</h1>
+
+      <!-- Error Message -->
+      {errorMessage && (
+        <div class="mb-4 p-4 bg-red-100 text-red-700 border border-red-300 rounded">
+          {errorMessage}
+        </div>
+      )}
+
+      <!-- Success Message -->
+      {successMessage && (
+        <div class="mb-4 p-4 bg-green-100 text-green-700 border border-green-300 rounded">
+          {successMessage}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit}>
+        <div class="mb-4">
+          <label for="email" class="block text-sm font-bold text-gray-700">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div class="mb-6">
+          <label for="password" class="block text-sm font-bold text-gray-700">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            required
+            class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="w-full py-2 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 focus:outline-none"
+        >
+          Login
+        </button>
+      </form>
+
+      <div class="mt-4 text-center">
+        <p class="text-sm">Don't have an account? <a href="/register" class="text-blue-600 hover:text-blue-800">Register</a></p>
+      </div>
+    </div>
+  </div>
+</Layout>
