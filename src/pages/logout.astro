@@ -1,19 +1,25 @@
 ---
-import Layout from '../layouts/Layout.astro';
 import { supabaseClient } from '../utils/supabaseClient';
-
-
-// Perform sign-out on the server
-try {
-  const { error } = await supabaseClient.auth.signOut();
-  if (error) {
-    console.error('Error signing out:', error);
-  }
-  // Redirect to the home page after sign-out
-  throw redirect('/', 302);
-} catch (error) {
-  console.error('Error during sign-out:', error);
-  // Handle the error, perhaps by redirecting to an error page
-  throw redirect('/error', 302);
-}
+import Layout from '../layouts/Layout.astro';
 ---
+
+<Layout>
+  <main class="container mx-auto px-4 py-8 text-center">
+    <h1 class="text-2xl font-semibold mb-4">Logging out...</h1>
+    <p class="text-textSecondary">Please wait while we log you out.</p>
+  </main>
+
+  <script type="module">
+    import { supabaseClient } from '../utils/supabaseClient';
+
+    // Call logout on Supabase
+    supabaseClient.auth.signOut().then(() => {
+      // Clear the cookies
+      document.cookie = "sb-access-token=; path=/; max-age=0";
+      document.cookie = "sb-refresh-token=; path=/; max-age=0";
+
+      // Redirect to login
+      window.location.href = '/login';
+    });
+  </script>
+</Layout>
