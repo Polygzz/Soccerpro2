@@ -1,12 +1,11 @@
 ---
-// Import the Layout component and the Supabase client
-import Layout from '../layouts/Layout.astro';
-import { supabase } from '../lib/supabaseclient.js'; // Import from the correct path
+// Import the supabase client from your supabaseClient.js file
+import { supabase } from '../lib/supabaseClient.js'; 
 
-// Redirect if already authenticated
+// Redirect to home page if already authenticated
 const { data: { user } } = await supabase.auth.getUser();
 if (user) {
-  return Astro.redirect('https://soccerpro.netlify.app/'); // Redirect to your desired URL after sign-in
+  return Astro.redirect('/');
 }
 ---
 
@@ -14,10 +13,13 @@ if (user) {
   <div class="min-h-screen bg-gray-100 flex items-center justify-center">
     <div class="bg-white p-8 rounded-lg shadow-md w-96">
       <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
-      <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"></div>
+      <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+      </div>
       <form id="loginForm">
         <div class="mb-4">
-          <label class="block text-gray-700 text-sm font-bold mb-2" for="email">Email</label>
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
+            Email
+          </label>
           <input
             id="email"
             type="email"
@@ -26,7 +28,9 @@ if (user) {
           />
         </div>
         <div class="mb-6">
-          <label class="block text-gray-700 text-sm font-bold mb-2" for="password">Password</label>
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
+            Password
+          </label>
           <input
             id="password"
             type="password"
@@ -54,26 +58,30 @@ if (user) {
 </Layout>
 
 <script>
-// Add the logic for handling form submission
-const form = document.getElementById('loginForm');
-const errorMessage = document.getElementById('error-message');
+  // Grab the form and error message elements
+  const form = document.getElementById('loginForm');
+  const errorMessage = document.getElementById('error-message');
 
-form?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = (document.getElementById('email') as HTMLInputElement).value;
-  const password = (document.getElementById('password') as HTMLInputElement).value;
+  // Add event listener to handle form submission
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
+    const email = (document.getElementById('email') as HTMLInputElement).value;
+    const password = (document.getElementById('password') as HTMLInputElement).value;
+
+    // Perform login using supabase
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      // Show error message if login fails
+      errorMessage?.classList.remove('hidden');
+      errorMessage!.textContent = error.message;
+    } else {
+      // Redirect to your desired URL after successful login
+      window.location.href = 'https://soccerpro.netlify.app/';
+    }
   });
-
-  if (error) {
-    errorMessage?.classList.remove('hidden');
-    errorMessage!.textContent = error.message;
-  } else {
-    // If successful, redirect to the specified URL
-    window.location.href = 'https://soccerpro.netlify.app/suggested/';
-  }
-});
 </script>
