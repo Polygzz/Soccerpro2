@@ -1,43 +1,75 @@
 ---
-// src/pages/register.astro
 import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout>
-  <main class="max-w-md mx-auto mt-12 p-6 bg-white rounded shadow">
-    <h1 class="text-2xl font-bold mb-4">Register</h1>
+  <main class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8 text-center">Register</h1>
 
-    <form id="registerForm" class="space-y-4">
-      <input name="email" type="email" placeholder="Email" required class="w-full p-2 border rounded" />
-      <input name="password" type="password" placeholder="Password" required class="w-full p-2 border rounded" />
-      <button type="submit" class="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600">Register</button>
+    <form id="registerForm" class="max-w-md mx-auto bg-boxColor shadow-md rounded px-8 pt-6 pb-8 mb-4">
+      <div class="mb-4">
+        <label class="block text-textPrimary text-sm font-bold mb-2" for="email">
+          Email
+        </label>
+        <input
+          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          id="email"
+          name="email"
+          type="email"
+          placeholder="Email"
+          required
+        />
+      </div>
+      <div class="mb-6">
+        <label class="block text-textPrimary text-sm font-bold mb-2" for="password">
+          Password
+        </label>
+        <input
+          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+          id="password"
+          name="password"
+          type="password"
+          placeholder="Password"
+          required
+        />
+      </div>
+      <div class="flex items-center justify-between">
+        <button
+          class="bg-primary hover:bg-secondary text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          type="submit"
+        >
+          Register
+        </button>
+        <a class="inline-block align-baseline font-bold text-sm text-primary hover:text-secondary" href="/login">
+          Login
+        </a>
+      </div>
     </form>
-
-    <p id="message" class="mt-4 text-sm text-red-500"></p>
   </main>
-
-  <script type="module">
-    import { supabaseClient } from '../utils/supabaseClient.js';
-
-    document.getElementById('registerForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const form = e.target;
-      const email = form.email.value;
-      const password = form.password.value;
-
-      const { error } = await supabaseClient.auth.signUp({ email, password });
-
-      const msg = document.getElementById('message');
-
-      if (error) {
-        msg.textContent = error.message;
-      } else {
-        msg.textContent = 'Registration successful! Redirecting to login...';
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 1500);
-      }
-    });
-  </script>
 </Layout>
+
+<script type="module">
+  import { supabaseClient } from '../utils/supabaseClient';
+
+  const form = document.getElementById('registerForm');
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    const { data, error } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: window.location.origin,
+      },
+    });
+
+    if (error) {
+      alert(error.message);
+    } else {
+      alert('Registration successful! Please check your email to verify your account.');
+      window.location.href = '/login';
+    }
+  });
+</script>

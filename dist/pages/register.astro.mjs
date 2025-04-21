@@ -1,0 +1,60 @@
+/* empty css                                    */
+import { c as createComponent, b as renderTemplate, r as renderComponent, m as maybeRenderHead } from '../chunks/astro/server_Cl7pzj9L.mjs';
+import 'kleur/colors';
+import 'html-escaper';
+import { $ as $$Layout } from '../chunks/Layout_COPUfQDN.mjs';
+export { renderers } from '../renderers.mjs';
+
+var __freeze = Object.freeze;
+var __defProp = Object.defineProperty;
+var __template = (cooked, raw) => __freeze(__defProp(cooked, "raw", { value: __freeze(cooked.slice()) }));
+var _a;
+const $$Register = createComponent(async ($$result, $$props, $$slots) => {
+  return renderTemplate(_a || (_a = __template(["", ` <script type="module">
+  import { supabaseClient } from '../utils/supabaseClient';
+
+  const form = document.getElementById('registerForm');
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    const { data, error } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: window.location.origin,
+      },
+    });
+
+    if (error) {
+      alert(error.message);
+    } else {
+      alert('Registration successful! Please check your email to verify your account.');
+      window.location.href = '/login';
+    }
+  });
+<\/script>`])), renderComponent($$result, "Layout", $$Layout, {}, { "default": async ($$result2) => renderTemplate` ${maybeRenderHead()}<main class="container mx-auto px-4 py-8"> <h1 class="text-3xl font-bold mb-8 text-center">Register</h1> <form id="registerForm" class="max-w-md mx-auto bg-boxColor shadow-md rounded px-8 pt-6 pb-8 mb-4"> <div class="mb-4"> <label class="block text-textPrimary text-sm font-bold mb-2" for="email">
+Email
+</label> <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="email" name="email" type="email" placeholder="Email" required> </div> <div class="mb-6"> <label class="block text-textPrimary text-sm font-bold mb-2" for="password">
+Password
+</label> <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" id="password" name="password" type="password" placeholder="Password" required> </div> <div class="flex items-center justify-between"> <button class="bg-primary hover:bg-secondary text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+Register
+</button> <a class="inline-block align-baseline font-bold text-sm text-primary hover:text-secondary" href="/login">
+Login
+</a> </div> </form> </main> ` }));
+}, "/home/project/src/pages/register.astro", void 0);
+
+const $$file = "/home/project/src/pages/register.astro";
+const $$url = "/register";
+
+const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: $$Register,
+  file: $$file,
+  url: $$url
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const page = () => _page;
+
+export { page };

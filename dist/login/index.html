@@ -1,6 +1,6 @@
-<!DOCTYPE html><html lang="en"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.7.4"><title>Soccer Training Tracker</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet"><script type="module" src="/_astro/Layout.astro_astro_type_script_index_0_lang.CxO_JRN6.js"></script><link rel="stylesheet" href="/_astro/calendar.BtGTSE3w.css"></head> <body class="bg-neutral font-sans min-h-screen text-textPrimary"> <div class="flex justify-end p-4"> <a href="/login" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-300">
+<!DOCTYPE html><html lang="en"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.7.4"><title>Soccer Training Tracker</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet"><script type="module" src="/_astro/Layout.astro_astro_type_script_index_0_lang.CxO_JRN6.js"></script><link rel="stylesheet" href="/_astro/calendar.DpsHjYf_.css"></head> <body class="bg-neutral font-sans min-h-screen text-textPrimary"> <div class="flex justify-end p-4"> <a href="/login" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-300">
 Login
-</a> </div>  <main class="container mx-auto px-4 py-8"> <h1 class="text-3xl font-bold mb-8 text-center">Login</h1> <form id="loginForm" method="post" action="/login" class="max-w-md mx-auto bg-boxColor shadow-md rounded px-8 pt-6 pb-8 mb-4"> <div class="mb-4"> <label class="block text-textPrimary text-sm font-bold mb-2" for="email">
+</a> </div>  <main class="container mx-auto px-4 py-8"> <h1 class="text-3xl font-bold mb-8 text-center">Login</h1> <form id="loginForm" class="max-w-md mx-auto bg-boxColor shadow-md rounded px-8 pt-6 pb-8 mb-4"> <div class="mb-4"> <label class="block text-textPrimary text-sm font-bold mb-2" for="email">
 Email
 </label> <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="email" name="email" type="email" placeholder="Email" required> </div> <div class="mb-6"> <label class="block text-textPrimary text-sm font-bold mb-2" for="password">
 Password
@@ -8,4 +8,31 @@ Password
 Sign In
 </button> <a class="inline-block align-baseline font-bold text-sm text-primary hover:text-secondary" href="/register">
 Register
-</a> </div> </form> </main>  </body></html> <script type="module" src="/_astro/login.astro_astro_type_script_index_0_lang.DqVNA4F-.js"></script>
+</a> </div> </form> </main>  </body></html> <script type="module">
+  import { supabaseClient } from '../utils/supabaseClient';
+
+  const form = document.getElementById('loginForm');
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      alert(error.message);
+    } else {
+      const { access_token, refresh_token } = data.session;
+
+      // Set cookies from the client side
+      document.cookie = `sb-access-token=${access_token}; path=/; secure; samesite=lax`;
+      document.cookie = `sb-refresh-token=${refresh_token}; path=/; secure; samesite=lax`;
+
+      alert('Login successful!');
+      window.location.href = '/';
+    }
+  });
+</script>

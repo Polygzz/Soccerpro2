@@ -13,9 +13,15 @@
   </head>
   <body class="bg-neutral font-sans min-h-screen text-textPrimary">
     <div class="flex justify-end p-4">
-      <a href="/login" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-300">
-        Login
-      </a>
+      {Astro.cookies.get('sb-access-token') ? (
+        <a href="/logout" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition-colors duration-300">
+          Logout
+        </a>
+      ) : (
+        <a href="/login" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-300">
+          Login
+        </a>
+      )}
     </div>
     <slot />
   </body>

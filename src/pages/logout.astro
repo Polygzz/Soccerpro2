@@ -1,13 +1,19 @@
 ---
+import Layout from '../layouts/Layout.astro';
 import { supabaseClient } from '../utils/supabaseClient';
-import { clearAuthCookies } from '../utils/auth';
 
-// Handle logout server-side
-clearAuthCookies(Astro.cookies);
 
-// Also sign out client-side session
-await supabaseClient.auth.signOut();
-
-// Redirect to login page
-return Astro.redirect('/login');
+// Perform sign-out on the server
+try {
+  const { error } = await supabaseClient.auth.signOut();
+  if (error) {
+    console.error('Error signing out:', error);
+  }
+  // Redirect to the home page after sign-out
+  throw redirect('/', 302);
+} catch (error) {
+  console.error('Error during sign-out:', error);
+  // Handle the error, perhaps by redirecting to an error page
+  throw redirect('/error', 302);
+}
 ---
