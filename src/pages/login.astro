@@ -1,94 +1,86 @@
 ---
-import Layout from '../layouts/Layout.astro';
 import { supabaseClient } from '../utils/supabaseClient';
 import { saveAuthCookies } from '../utils/auth';
-import { useState } from 'react';
+import { useState } from 'astro/hooks';
 
-let errorMessage = '';
-let successMessage = '';
+const [email, setEmail] = useState('');
+const [password, setPassword] = useState('');
+const [errorMessage, setErrorMessage] = useState('');
+const [isLoading, setIsLoading] = useState(false);
 
-const handleSubmit = async (event) => {
-  event.preventDefault();
+const handleLogin = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
+  
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-  const email = event.target.email.value;
-  const password = event.target.password.value;
-
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) {
-    errorMessage = error.message;
-    successMessage = ''; // Clear success message on error
-  } else {
-    successMessage = 'Login successful! Redirecting to dashboard...';
-    errorMessage = ''; // Clear error message on success
-
-    // Save the session to cookies for persistence
-    saveAuthCookies(Astro.cookies, data.session);
-
-    // Redirect to dashboard after login
-    setTimeout(() => {
-      window.location.href = '/dashboard';  // Redirect to your dashboard
-    }, 2000); // Wait for a short time before redirecting
+    if (error) {
+      setErrorMessage(error.message);
+      setIsLoading(false);
+    } else {
+      // Save cookies to keep the session alive
+      saveAuthCookies(Astro.cookies, data.session);
+      window.location.href = '/dashboard';  // Redirect to dashboard after login
+    }
+  } catch (err) {
+    setErrorMessage('An error occurred. Please try again.');
+    setIsLoading(false);
   }
 };
 ---
 
 <Layout>
-  <div class="flex justify-center items-center min-h-screen bg-gray-100">
-    <div class="w-full max-w-sm p-6 bg-white rounded-lg shadow-lg">
-      <h1 class="text-2xl font-bold text-center mb-6">Login</h1>
-
-      <!-- Error Message -->
-      {errorMessage && (
-        <div class="mb-4 p-4 bg-red-100 text-red-700 border border-red-300 rounded">
-          {errorMessage}
-        </div>
-      )}
-
-      <!-- Success Message -->
-      {successMessage && (
-        <div class="mb-4 p-4 bg-green-100 text-green-700 border border-green-300 rounded">
-          {successMessage}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit}>
-        <div class="mb-4">
-          <label for="email" class="block text-sm font-bold text-gray-700">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            required
-            class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <div class="mb-6">
-          <label for="password" class="block text-sm font-bold text-gray-700">Password</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            required
-            class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <button
-          type="submit"
-          class="w-full py-2 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 focus:outline-none"
-        >
-          Login
-        </button>
-      </form>
-
-      <div class="mt-4 text-center">
-        <p class="text-sm">Don't have an account? <a href="/register" class="text-blue-600 hover:text-blue-800">Register</a></p>
+  <div class="container mx-auto p-4">
+    <h1 class="text-3xl font-bold text-center mb-8">Login to Your Account</h1>
+    
+    {errorMessage && (
+      <div class="bg-red-500 text-white p-4 rounded mb-4">
+        <p>{errorMessage}</p>
       </div>
-    </div>
+    )}
+
+    <form onSubmit={handleLogin} class="max-w-md mx-auto">
+      <div class="mb-4">
+        <label for="email" class="block text-lg font-medium">Email</label>
+        <input 
+          type="email" 
+          id="email" 
+          value={email}
+          onInput={(e) => setEmail(e.target.value)} 
+          required
+          class="mt-1 p-2 w-full border rounded"
+        />
+      </div>
+
+      <div class="mb-4">
+        <label for="password" class="block text-lg font-medium">Password</label>
+        <input 
+          type="password" 
+          id="password" 
+          value={password}
+          onInput={(e) => setPassword(e.target.value)} 
+          required
+          class="mt-1 p-2 w-full border rounded"
+        />
+      </div>
+
+      <div class="mb-4">
+        <button 
+          type="submit" 
+          disabled={isLoading} 
+          class="w-full bg-blue-500 text-white py-2 rounded"
+        >
+          {isLoading ? 'Logging in...' : 'Login'}
+        </button>
+      </div>
+    </form>
+
+    <p class="text-center">
+      Don't have an account? <a href="/register" class="text-blue-500">Register here</a>
+    </p>
   </div>
 </Layout>
