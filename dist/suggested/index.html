@@ -1,0 +1,158 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.7.4"><title>Soccer Training Tracker</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet"><script type="module" src="/_astro/Layout.astro_astro_type_script_index_0_lang.CxO_JRN6.js"></script><link rel="stylesheet" href="/_astro/calendar.BtGTSE3w.css"></head> <body class="bg-neutral font-sans min-h-screen text-textPrimary"> <div class="flex justify-end p-4"> <a href="/login" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-300">
+Login
+</a> </div>  <nav class="bg-white shadow-md mb-8"> <div class="container mx-auto px-4"> <div class="flex items-center justify-between py-4"> <a href="/" class="text-xl font-bold text-primary transition-colors duration-300 hover:text-secondary">Soccer Tracker</a> <!-- Hamburger menu button (visible on small screens) --> <button id="menuBtn" class="md:hidden text-gray-600 hover:text-blue-600 transition-colors duration-300"> <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"> <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path> </svg> </button> <!-- Navigation links (hidden on small screens, visible on medium and larger) --> <div class="md:flex space-x-4 bg-white rounded p-4 w-full md:w-auto transition-all duration-300 ease-in-out hidden md:justify-center items-center font-sans"> <a href="/" class="text-gray-600 hover:text-blue-800 block md:inline-block transition-colors duration-300">
+Training Log
+</a> <a href="/calendar" class="text-gray-600 hover:text-blue-800 block md:inline-block transition-colors duration-300">
+Calendar
+</a> <a href="/motivation" class="text-gray-600 hover:text-blue-800 block md:inline-block">
+Motivation
+</a> <a href="/readiness" class="text-gray-600 hover:text-blue-800 block md:inline-block">
+Readiness
+</a> <a href="/notes" class="text-gray-600 hover:text-blue-800 block md:inline-block">
+Notes
+</a> <a href="/suggested" class="text-gray-600 hover:text-blue-800 block md:inline-block">
+Soccer Training
+</a> <a href="/gym" class="text-gray-600 hover:text-blue-800 block md:inline-block">
+Gym Workouts
+</a> </div> </div> </div> </nav> <script type="module">const n=document.getElementById("menuBtn");function t(){const e=document.querySelector(".md\\:flex");e&&e.classList.toggle("hidden")}n?.addEventListener("click",t);</script> <main class="container mx-auto px-4 py-8"> <h1 class="text-3xl font-bold mb-8">Suggested Workouts</h1> <form id="addWorkout" class="bg-white p-6 rounded-lg shadow-md mb-8"> <h2 class="text-xl font-bold mb-4">Add New Suggested Workout</h2> <div class="mb-4"> <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
+Workout Title
+</label> <input type="text" id="title" name="title" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required> </div> <div class="mb-4"> <label class="block text-gray-700 text-sm font-bold mb-2" for="duration">
+Duration (minutes)
+</label> <input type="number" id="duration" name="duration" min="1" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required> </div> <div class="mb-4"> <label class="block text-gray-700 text-sm font-bold mb-2" for="difficulty">
+Difficulty
+</label> <select id="difficulty" name="difficulty" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required> <option value="Beginner">Beginner</option> <option value="Intermediate">Intermediate</option> <option value="Advanced">Advanced</option> </select> </div> <div class="mb-4"> <label class="block text-gray-700 text-sm font-bold mb-2" for="exercises">
+Exercises (one per line)
+</label> <textarea id="exercises" name="exercises" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="5" required></textarea> </div> <div class="mb-4"> <label class="block text-gray-700 text-sm font-bold mb-2" for="image">
+Workout Image URL
+</label> <input type="url" id="image" name="image" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="https://example.com/image.jpg"> </div> <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+Add Workout
+</button> </form> <div id="workoutsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"> <!-- Workouts will be populated by JavaScript --> </div> </main>  </body></html> <script>
+function editWorkout(index) {
+  const workouts = JSON.parse(localStorage.getItem('suggestedWorkouts') || '[]');
+  const workout = workouts[index];
+  
+  const form = document.createElement('form');
+  form.innerHTML = `
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div class="bg-white p-6 rounded-lg w-full max-w-lg">
+        <h3 class="text-xl font-bold mb-4">Edit Workout</h3>
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2">Title</label>
+          <input type="text" value="${workout.title}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" name="title">
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2">Duration (minutes)</label>
+          <input type="number" value="${workout.duration}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" name="duration">
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2">Difficulty</label>
+          <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" name="difficulty">
+            <option value="Beginner" ${workout.difficulty === 'Beginner' ? 'selected' : ''}>Beginner</option>
+            <option value="Intermediate" ${workout.difficulty === 'Intermediate' ? 'selected' : ''}>Intermediate</option>
+            <option value="Advanced" ${workout.difficulty === 'Advanced' ? 'selected' : ''}>Advanced</option>
+          </select>
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2">Exercises (one per line)</label>
+          <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" name="exercises" rows="5">${workout.exercises.join('\n')}</textarea>
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2">Image URL</label>
+          <input type="url" value="${workout.image || ''}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" name="image">
+        </div>
+        <div class="flex justify-end space-x-2">
+          <button type="button" onclick="this.closest('form').remove()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Cancel</button>
+          <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Save</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(form);
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    workouts[index] = {
+      title: formData.get('title'),
+      duration: parseInt(formData.get('duration')),
+      difficulty: formData.get('difficulty'),
+      exercises: formData.get('exercises')?.toString().split('\n').map(e => e.trim()).filter(e => e),
+      image: formData.get('image')
+    };
+
+    localStorage.setItem('suggestedWorkouts', JSON.stringify(workouts));
+    window.displayWorkouts();
+    form.remove();
+  });
+}
+
+function deleteWorkout(index) {
+  if (confirm('Are you sure you want to delete this workout?')) {
+    const workouts = JSON.parse(localStorage.getItem('suggestedWorkouts') || '[]');
+    workouts.splice(index, 1);
+    localStorage.setItem('suggestedWorkouts', JSON.stringify(workouts));
+    window.displayWorkouts();
+  }
+}
+
+function addToCustomWorkouts(index) {
+  const workouts = JSON.parse(localStorage.getItem('suggestedWorkouts') || '[]');
+  const workout = workouts[index];
+  if (!workout) return;
+
+  const customWorkouts = JSON.parse(localStorage.getItem('customWorkouts') || '[]');
+  if (!customWorkouts.some(w => w.name === workout.title)) {
+    customWorkouts.push({
+      name: workout.title,
+      duration: workout.duration,
+      exercises: workout.exercises,
+      image: workout.image
+    });
+    localStorage.setItem('customWorkouts', JSON.stringify(customWorkouts));
+    alert('Workout added to your custom workouts!');
+  } else {
+    alert('This workout is already in your custom workouts!');
+  }
+}
+</script> <script type="module">const d=[{title:"Ball Control Mastery",duration:45,difficulty:"Beginner",exercises:["Toe taps (5 minutes)","Inside/outside rolls (5 minutes)","Figure 8s (5 minutes)","Sole rolls with direction change (5 minutes)","Dribbling through cones (10 minutes)","Ball mastery circuit (15 minutes)"],image:"https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=800"},{title:"Shooting Power",duration:60,difficulty:"Intermediate",exercises:["Dynamic stretching (10 minutes)","Shot technique drills (15 minutes)","Power shooting from different angles (15 minutes)","First-time shots (10 minutes)","Shooting under pressure (10 minutes)"],image:"https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=800"},{title:"Speed and Agility",duration:50,difficulty:"Advanced",exercises:["Ladder drills (10 minutes)","Sprint intervals (10 minutes)","Quick direction changes (10 minutes)","Cone agility drills (10 minutes)","Speed dribbling (10 minutes)"],image:"https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=800"}];let o=JSON.parse(localStorage.getItem("suggestedWorkouts")||JSON.stringify(d));function n(){const t=document.getElementById("workoutsList");t&&(t.innerHTML=o.map((e,i)=>`
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          ${e.image?`
+            <img src="${e.image}" alt="${e.title}" class="w-full h-48 object-cover rounded-lg mb-4"/>
+          `:""}
+          <h2 class="text-xl font-bold mb-2">${e.title}</h2>
+          <div class="flex items-center mb-4">
+            <span class="text-gray-600 mr-4">${e.duration} minutes</span>
+            <span class="px-3 py-1 rounded-full text-sm ${e.difficulty==="Beginner"?"bg-green-100 text-green-800":e.difficulty==="Intermediate"?"bg-yellow-100 text-yellow-800":"bg-red-100 text-red-800"}">
+              ${e.difficulty}
+            </span>
+          </div>
+          <ul class="list-disc list-inside space-y-2 mb-4">
+            ${e.exercises.map(s=>`
+              <li class="text-gray-700">${s}</li>
+            `).join("")}
+          </ul>
+          <div class="flex space-x-2">
+            <button
+              onclick="editWorkout(${i})"
+              class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            >
+              Edit
+            </button>
+            <button
+              onclick="deleteWorkout(${i})"
+              class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            >
+              Delete
+            </button>
+            <button
+              onclick="addToCustomWorkouts(${i})"
+              class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            >
+              Add to Custom
+            </button>
+          </div>
+        </div>
+      `).join(""))}window.displayWorkouts=n;const l=document.getElementById("addWorkout");l?.addEventListener("submit",t=>{t.preventDefault();const e=new FormData(t.target),i={title:e.get("title"),duration:parseInt(e.get("duration")),difficulty:e.get("difficulty"),exercises:e.get("exercises")?.toString().split(`
+`).map(s=>s.trim()).filter(s=>s),image:e.get("image")};o.push(i),localStorage.setItem("suggestedWorkouts",JSON.stringify(o)),n(),l.reset()});n();</script>
