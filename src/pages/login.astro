@@ -32,7 +32,7 @@ if (Astro.request.method === 'POST') {
         console.error('Login error:', error);
         return Astro.redirect(`/login?error=true&message=${encodeURIComponent(error.message)}`);
       } else if (data.session) {
-        // Save session in cookies
+        // Save session in cookies with updated options
         saveAuthCookies(Astro.cookies, data.session);
         return Astro.redirect('/?login=success');
       }
@@ -119,9 +119,16 @@ if (Astro.request.method === 'POST') {
         statusMessage.className = "mb-4 p-4 bg-green-100 text-green-700 rounded-lg";
         statusMessage.innerText = "Login successful! Redirecting...";
         
+        // Store auth session in local storage as backup
+        localStorage.setItem('supabase.auth.token', JSON.stringify({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token
+        }));
+        
         // Wait a moment before submitting to show the success message
         setTimeout(() => {
-          window.location.href = '/'; // Keep your original client-side redirect
+          // Submit the form to trigger server-side redirect
+          form.submit();
         }, 1000);
         return;
       }

@@ -129,7 +129,7 @@ if (Astro.request.method === 'POST') {
         
         // Wait a moment before redirecting to show the success message
         setTimeout(() => {
-          window.location.href = '/login?registered=true'; // Use client-side redirect like in your original code
+          form.submit(); // Use server-side redirect
         }, 1500);
         return;
       }
