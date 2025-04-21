@@ -38,6 +38,8 @@ const { authProviders } = Astro.props;
 </Layout>
 
 <script>
+  import { supabaseClient } from '../utils/supabaseClient';
+
   const form = document.getElementById('registerForm');
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();

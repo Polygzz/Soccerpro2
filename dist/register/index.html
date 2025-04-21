@@ -8,4 +8,4 @@ Password
 Register
 </button> <a class="inline-block align-baseline font-bold text-sm text-primary hover:text-secondary" href="/login">
 Login
-</a> </div> </form> </main>  </body></html> <script type="module">const n=document.getElementById("registerForm");n?.addEventListener("submit",async t=>{t.preventDefault();const o=document.getElementById("email").value,a=document.getElementById("password").value,{data:s,error:e}=await supabaseClient.auth.signUp({email:o,password:a,options:{emailRedirectTo:window.location.origin}});e?alert(e.message):(alert("Registration successful! Please check your email to verify your account."),window.location.href="/login")});</script>
+</a> </div> </form> </main>  </body></html> <script type="module" src="/_astro/register.astro_astro_type_script_index_0_lang.PYNerACb.js"></script>
