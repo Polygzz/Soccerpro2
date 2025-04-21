@@ -1,8 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { supabase } from '../lib/supabaseClient.js';
+import { supabase } from '../utils/supabaseClient.js'; // ✅ Fixed import
 
-// Check if the user is already signed in
 const { data: { user } } = await supabase.auth.getUser();
 if (user) {
   return Astro.redirect('https://soccerpro.netlify.app/');
@@ -16,14 +15,16 @@ if (user) {
       <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"></div>
       <form id="loginForm">
         <div class="mb-4">
-          <label class="block text-gray-700 text-sm font-bold mb-2" for="email">Email</label>
-          <input id="email" type="email" class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" required />
+          <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+          <input id="email" type="email" required class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" />
         </div>
         <div class="mb-6">
-          <label class="block text-gray-700 text-sm font-bold mb-2" for="password">Password</label>
-          <input id="password" type="password" class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" required />
+          <label for="password" class="block text-gray-700 text-sm font-bold mb-2">Password</label>
+          <input id="password" type="password" required class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" />
         </div>
-        <button type="submit" class="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">Login</button>
+        <button type="submit" class="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">
+          Login
+        </button>
       </form>
       <div class="mt-4 text-center">
         <p class="text-gray-600">Don't have an account? <a href="/register" class="text-blue-500 hover:text-blue-700">Register</a></p>
@@ -32,7 +33,7 @@ if (user) {
   </div>
 
   <script type="module">
-    import { supabase } from '../lib/supabaseClient.js';
+    import { supabase } from '../utils/supabaseClient.js';
 
     const form = document.getElementById('loginForm');
     const errorMessage = document.getElementById('error-message');
