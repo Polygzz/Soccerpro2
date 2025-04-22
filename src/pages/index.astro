@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import AddSession from '../components/AddSession.astro';
-import { supabaseClient } from '../utils/supabaseClient'; // Ensure correct import path
+import { supabaseClient } from '../utils/supabaseClient'; // Import supabaseClient
 
 let user = null;
 
@@ -18,7 +18,6 @@ if (currentUser) {
   console.log("User is not signed in");
 }
 ---
-
 <Layout>
   <div class="fixed top-4 right-4 z-50">
     {user ? (
