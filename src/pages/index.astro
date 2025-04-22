@@ -2,22 +2,11 @@
 import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import AddSession from '../components/AddSession.astro';
-import { supabaseClient } from '../utils/supabaseClient'; // Import supabaseClient
+import { supabase } from '../utils/supabaseClient.js';
 
-let user = null;
-
-// Fetch the current user from Supabase
-const {
-  data: { user: currentUser }
-} = await supabaseClient.auth.getUser();
-
-if (currentUser) {
-  console.log("User is signed in:", currentUser);
-  user = currentUser;
-} else {
-  console.log("User is not signed in");
-}
+const { data: { user } } = await supabase.auth.getUser();
 ---
+
 <Layout>
   <div class="fixed top-4 right-4 z-50">
     {user ? (
@@ -37,7 +26,6 @@ if (currentUser) {
   <main class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold mb-8 text-center text-textPrimary">Soccer Training Tracker</h1>
 
-    <!-- Weather, Training Summary, AddSession Components Below -->
     <div class="weather-container mb-8 bg-boxColor p-6 rounded-lg shadow-md transition-shadow duration-300 hover:shadow-lg">
       <h2 class="text-xl font-bold mb-4 text-textPrimary">Local Weather</h2>
       <div id="weatherDisplay" class="flex items-center">
@@ -71,7 +59,7 @@ if (currentUser) {
   </main>
 </Layout>
 
-<!-- Scripts below -->
+<!-- Scripts -->
 <script>
   const sessionsContainer = document.getElementById('sessions');
   const totalMinutesElement = document.getElementById('totalMinutes');
@@ -79,13 +67,11 @@ if (currentUser) {
   const updateLocationBtn = document.getElementById('updateLocationBtn');
   const locationInput = document.getElementById('zipcode');
 
-  // Calculate and display total minutes
   const totalMinutes = sessions.reduce((total, session) => total + parseInt(session.duration), 0);
   if (totalMinutesElement) {
     totalMinutesElement.textContent = `${totalMinutes} minutes`;
   }
 
-  // Sort and display sessions
   sessions.sort((a, b) => new Date(b.date) - new Date(a.date));
   if (sessionsContainer) {
     sessionsContainer.innerHTML = sessions.map(session => {
@@ -176,5 +162,5 @@ if (currentUser) {
     }
   });
 
-  getWeatherData('10001'); // Default ZIP code
+  getWeatherData('10001');
 </script>

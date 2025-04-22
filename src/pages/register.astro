@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { supabase } from '../utils/supabaseClient.js'; // ✅ Fixed import
+import { supabase } from '../utils/supabaseClient.js';
 
 const { data: { user } } = await supabase.auth.getUser();
 if (user) {
@@ -49,7 +49,6 @@ if (user) {
         errorMessage.textContent = error.message;
         errorMessage.classList.remove('hidden');
       } else {
-        alert('Registration successful! Check your email to verify your account.');
         window.location.href = '/login';
       }
     });
