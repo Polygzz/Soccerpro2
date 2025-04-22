@@ -2,10 +2,11 @@
 import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import AddSession from '../components/AddSession.astro';
-import { supabaseClient } from '../utils/supabaseClient';
+import { supabaseClient } from '../utils/supabaseClient'; // Ensure correct import path
 
 let user = null;
 
+// Fetch the current user from Supabase
 const {
   data: { user: currentUser }
 } = await supabaseClient.auth.getUser();
